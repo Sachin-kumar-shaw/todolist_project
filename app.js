@@ -13,6 +13,7 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 mongoose.connect("mongodb+srv://admin-sachin:test-123@cluster0.adekibq.mongodb.net/todolistDB");
+// mongoose.connect("mongodb://localhost:27017/todolistDB");
 
 const itemSchema = mongoose.Schema({
   itemName:String
@@ -64,13 +65,15 @@ app.post("/", function(req, res){
     itemName:item,
     });
   if(list === "Today"){
-    newItem.save();
+    newItem.save().then(()=>{
     res.redirect("/");
+    });
   }else{
     List.findOne({name:list}).then((currentList)=>{
       currentList.items.push(newItem);
-      currentList.save();
-      res.redirect("/"+list);
+      currentList.save().then(()=>{
+        res.redirect("/"+list);
+      });
 
     })
   }
@@ -104,8 +107,9 @@ app.get("/:customListName",function(req,res){
         name:customListName,
         items:defaultItems
       })
-      newList.save();
-      res.redirect("/"+customListName);
+      newList.save().then(()=>{
+        res.redirect("/"+customListName);
+      });
     }else{
       res.render("list", {listTitle: itemObject.name, newListItems: itemObject.items});
     }
